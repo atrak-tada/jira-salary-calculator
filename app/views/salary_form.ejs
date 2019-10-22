@@ -279,9 +279,7 @@
         <h1>Welcome</h1>
 
         <form class="form" action="/jira/sprint/salary" method="POST">
-            <%if(userName=="gh.kamari"){%>
             <input type="text" placeholder="username" name="dev_username" value="">
-            <%}%>
             <select name="boardId">
                 <% boards_val.forEach(function (board) {%>
             <option value=<%= board.id %>><%= board.name %></option>
