@@ -1,0 +1,25 @@
+<style>
+
+</style>
+
+
+<div class="wrapper">
+
+        <ul class="menu">
+            <div class="head">Boards</div> 
+        <ul>
+                <% boards_val.forEach(function (board) {%>
+          <li>
+            <div class="proPic">
+            <div class="info">
+              <h3><%= board.id %> - <%= board.name %></h3>
+              <div class="social">
+               
+              </div>
+           </div>
+          </li>
+          <% })%>
+          </ul>
+      
+        </ul>
+      </div>

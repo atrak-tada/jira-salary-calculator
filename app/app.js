@@ -10,10 +10,13 @@ const errorHandler = require('./middlewares/error-handler');
 const corsConfig = require('./config/cors');
 const logger = require('./logger');
 const router = require('./routes');
+const session = require('koa-session');
+const views = require('koa-views');
+const render = require('koa-ejs');
+const path = require('path');
+var JiraClient = require('jira-client');
 var jwt = require('jsonwebtoken');
 var key = require('./config/sk');
-var JiraClient = require('jira-client');
-
 
 class App extends Koa {
   constructor(...params) {
@@ -32,22 +35,20 @@ class App extends Koa {
 
   }
 
-  _configureMiddlewares() {
-    
+  _configureMiddlewares() {   
     this.use(errorHandler());
     this.use(apmMiddleware());
     this.use(requestId());
+    
     this.use(logging({
       logger,
       overrideSerializers: false
     }));
-
+    
     this.use(
-      bodyParser({
-        enableTypes: ['json'],
-        jsonLimit: '10mb'
-      })
+      bodyParser()
     );
+    
     this.use(
       cors({
         origins: corsConfig.origins,
@@ -57,15 +58,26 @@ class App extends Koa {
       })
 
     );
-    
+    this.use(session({ signed: false },this))
+    render(this, {
+      root: path.join(__dirname, '/views'),
+      layout: 'template',
+      viewExt: 'ejs',
+      cache: false,
+      debug: true,
+      async:true
+    });
     this.use(async function (ctx, next) {
       if (ctx.request.method == "POST" || ctx.request.method == "GET") {
-        let token = ctx.request.headers.authorization
+                let token = ctx.session.authorization
+        
         let auth = {}
         let jira = {}
         if (token) {
           auth = jwt.verify(token, key.secret)
         }
+        
+        
         else if (ctx.request.body.username && ctx.request.body.password) {
 
           auth = {
@@ -73,7 +85,10 @@ class App extends Koa {
             password: ctx.request.body.password
           }
           token = jwt.sign(auth, key.secret)
-          ctx.jwtToken = token
+          // ctx.jwtToken = token
+          // console.log(token);
+          
+          ctx.session.authorization = token
         }
 
         if (auth) {
@@ -91,8 +106,7 @@ class App extends Koa {
       }
 
     })
-
-
+    
   }
 
   _configureRoutes() {

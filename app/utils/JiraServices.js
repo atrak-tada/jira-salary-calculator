@@ -6,7 +6,7 @@ class JiraServices {
 
     static async getAllIssuesOfUser(ctx) {
 
-        const token = ctx.request.headers.authorization
+        const token = ctx.session.authorization
         if (token) {
             var auth = jwt.verify(token, key.secret)
         }
@@ -17,7 +17,7 @@ class JiraServices {
             }
         }
         let { data } = await axios({
-            url: `http://jira.ham-sun.com/rest/agile/latest/board/${ctx.request.body.boardId}/sprint/${ctx.request.body.sprintId}/issue?jql=assignee in (currentUser())`,
+            url: `http://jira.ham-sun.com/rest/agile/latest/board/${ctx.request.body.boardId}/sprint/${ctx.request.body.sprintId}/issue?jql=assignee in (${ctx.request.body.dev_username})`,
             headers: {
                 Authorization: 'Basic ' + base64.Base64.toBase64(auth.username + '.' + auth.password)
             },
